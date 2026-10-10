@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Tushar Zone — Admin</title>
+  <style>
+    body {
+      margin: 0;
+      padding: 24px;
+      background: #080808;
+      color: #f5c542;
+      font-family: Arial, sans-serif;
+    }
+    main {
+      max-width: 520px;
+      margin: 40px auto;
+      padding: 24px;
+      border: 1px solid #f5c542;
+      border-radius: 14px;
+      background: #151515;
+    }
+    button {
+      padding: 12px 18px;
+      margin: 6px 0;
+      border: 0;
+      border-radius: 8px;
+      background: #f5c542;
+      color: #111;
+      font-weight: bold;
+      cursor: pointer;
+    }
+    #status {
+      color: white;
+      overflow-wrap: anywhere;
+    }
+  </style>
+</head>
+<body>
+<main>
+  <h1>Tushar Zone</h1>
+  <h2>Admin Login</h2>
+  <p>নিজের Google account দিয়ে লগইন করো।</p>
+
+  <button id="login">Google দিয়ে Login</button>
+  <button id="logout" hidden>Logout</button>
+
+  <p id="status">লগইন করা হয়নি।</p>
+</main>
+
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+
+<script>
+  const firebaseConfig = {
+    apiKey: "AIzaSyBZu_ChHBpAmJ15l-22LdahOAPntIenx0",
+    authDomain: "tushar-zone-558ed.firebaseapp.com",
+    projectId: "tushar-zone-558ed",
+    storageBucket: "tushar-zone-558ed.firebasestorage.app",
+    messagingSenderId: "886961280145",
+    appId: "1:886961280145:web:40269c604abe491c7d1b30",
+    measurementId: "G-8S6YC6ZBM1"
+  };
+
+  firebase.initializeApp(firebaseConfig);
+  const auth = firebase.auth();
+
+  const status = document.getElementById("status");
+  const loginButton = document.getElementById("login");
+  const logoutButton = document.getElementById("logout");
+
+  loginButton.onclick = async () => {
+    try {
+      const provider = new firebase.auth.GoogleAuthProvider();
+      await auth.signInWithPopup(provider);
+    } catch (error) {
+      status.textContent = "Login error: " + error.message;
+    }
+  };
+
+  logoutButton.onclick = () => auth.signOut();
+
+  auth.onAuthStateChanged(user => {
+    if (user) {
+      status.textContent =
+        "Login হয়েছে!\nEmail: " + user.email +
+        "\n\nতোমার UID:\n" + user.uid +
+        "\n\nএই UID-টি কপি করে নিরাপদে রাখো।";
+      loginButton.hidden = true;
+      logoutButton.hidden = false;
+    } else {
+      status.textContent = "লগইন করা হয়নি।";
+      loginButton.hidden = false;
+      logoutButton.hidden = true;
+    }
+  });
+</script>
+</body>
+</html>
