@@ -185,6 +185,37 @@ document.querySelectorAll('nav a').forEach(a=>a.addEventListener('click',()=>doc
       content.style.whiteSpace = "pre-wrap";
       content.textContent = data.content || "";
       card.append(content);
+
+      const copyButton = document.createElement("button");
+      copyButton.type = "button";
+      copyButton.textContent = "📋 লেখা কপি করুন";
+      copyButton.style.marginTop = "10px";
+      copyButton.style.padding = "10px 16px";
+      copyButton.style.border = "none";
+      copyButton.style.borderRadius = "8px";
+      copyButton.style.cursor = "pointer";
+
+      copyButton.addEventListener("click", async () => {
+        const textToCopy = data.content || "";
+        if (!textToCopy.trim()) {
+          copyButton.textContent = "কপি করার মতো লেখা নেই";
+          return;
+        }
+
+        try {
+          await navigator.clipboard.writeText(textToCopy);
+          copyButton.textContent = "✅ লেখা কপি হয়েছে!";
+        } catch (error) {
+          copyButton.textContent = "কপি করা যায়নি—HTTPS-এ চেষ্টা করুন";
+          console.error("Copy failed:", error);
+        }
+
+        setTimeout(() => {
+          copyButton.textContent = "📋 লেখা কপি করুন";
+        }, 2000);
+      });
+
+      card.append(copyButton);
       container.append(card);
     });
   }
