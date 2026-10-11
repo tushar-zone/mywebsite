@@ -182,7 +182,7 @@ removeImageButton.onclick = () => {
 
 loginButton.onclick = async () => {
   try {
-    await auth.signInWithPopup(
+    await auth.signInWithRedirect(
       new firebase.auth.GoogleAuthProvider()
     );
   } catch (error) {
