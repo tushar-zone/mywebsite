@@ -89,6 +89,13 @@ footer{text-align:center;border-top:1px solid #5f4519;padding:24px;color:var(--m
 
 <section id="my-posts">
 <h2 class="section-title">আমার <span>লেখা</span></h2>
+<div style="margin:0 0 20px">
+  <input id="post-search" type="search"
+    placeholder="🔎 পোস্ট খুঁজুন..."
+    aria-label="পোস্ট খুঁজুন"
+    style="width:100%;box-sizing:border-box;padding:14px 16px;border:1px solid #c79732;border-radius:12px;background:var(--card);color:inherit;font:inherit">
+  <p id="search-status" aria-live="polite" style="margin:8px 2px"></p>
+</div>
 <div id="posts-list" class="cards">
   <p>লেখা লোড হচ্ছে...</p>
 </div>
@@ -120,57 +127,77 @@ document.querySelectorAll('nav a').forEach(a=>a.addEventListener('click',()=>doc
   };
 
   const container = document.getElementById("posts-list");
+  const searchInput = document.getElementById("post-search");
+  const searchStatus = document.getElementById("search-status");
   if (!container) return;
+
+  let allPosts = [];
+
+  function renderPosts() {
+    const query = (searchInput?.value || "").trim().toLocaleLowerCase();
+    const filtered = allPosts.filter(data =>
+      `${data.title || ""} ${data.content || ""}`
+        .toLocaleLowerCase().includes(query)
+    );
+
+    container.replaceChildren();
+
+    if (!filtered.length) {
+      container.textContent = query
+        ? "এই শব্দের সঙ্গে মেলে এমন কোনো পোস্ট পাওয়া যায়নি।"
+        : "এখনও কোনো লেখা প্রকাশিত হয়নি।";
+      if (searchStatus) searchStatus.textContent = query ? "কোনো ফলাফল নেই" : "";
+      return;
+    }
+
+    if (searchStatus) {
+      searchStatus.textContent = query
+        ? `পাওয়া গেছে ${filtered.length}টি পোস্ট`
+        : `মোট ${filtered.length}টি পোস্ট`;
+    }
+
+    filtered.forEach(data => {
+      const card = document.createElement("article");
+      card.className = "card";
+
+      const heading = document.createElement("h3");
+      heading.textContent = data.title || "শিরোনাম নেই";
+      card.append(heading);
+
+      if (data.imageUrl) {
+        const image = document.createElement("img");
+        image.src = data.imageUrl;
+        image.alt = data.title || "পোস্টের ছবি";
+        image.loading = "lazy";
+        image.style.width = "100%";
+        image.style.height = "auto";
+        image.style.display = "block";
+        image.style.borderRadius = "12px";
+        image.style.marginBottom = "12px";
+        image.onerror = () => {
+          image.style.display = "none";
+          console.error("Post image failed to load:", data.imageUrl);
+        };
+        card.append(image);
+      }
+
+      const content = document.createElement("p");
+      content.style.whiteSpace = "pre-wrap";
+      content.textContent = data.content || "";
+      card.append(content);
+      container.append(card);
+    });
+  }
+
+  searchInput?.addEventListener("input", renderPosts);
 
   try {
     firebase.initializeApp(firebaseConfig);
     firebase.firestore().collection("posts")
       .orderBy("createdAt", "desc")
       .onSnapshot(snapshot => {
-        container.replaceChildren();
-
-        if (snapshot.empty) {
-          container.textContent = "এখনও কোনো লেখা প্রকাশিত হয়নি।";
-          return;
-        }
-
-        snapshot.forEach(doc => {
-          const data = doc.data();
-          const card = document.createElement("article");
-          card.className = "card";
-
-          const heading = document.createElement("h3");
-          heading.textContent = data.title || "শিরোনাম নেই";
-
-          const content = document.createElement("p");
-          content.style.whiteSpace = "pre-wrap";
-          content.textContent = data.content || "";
-
-          card.append(heading);
-
-          if (data.imageUrl) {
-            const image = document.createElement("img");
-            image.src = data.imageUrl;
-            image.alt = data.title || "পোস্টের ছবি";
-            image.loading = "lazy";
-            image.style.width = "100%";
-            image.style.height = "auto";
-            image.style.display = "block";
-            image.style.borderRadius = "12px";
-            image.style.marginBottom = "12px";
-
-            image.onerror = () => {
-              image.alt = "ছবিটি লোড করা যায়নি";
-              image.style.display = "none";
-              console.error("Post image failed to load:", data.imageUrl);
-            };
-
-            card.append(image);
-          }
-
-          card.append(content);
-          container.append(card);
-        });
+        allPosts = snapshot.docs.map(doc => doc.data());
+        renderPosts();
       }, error => {
         container.textContent = "লেখা লোড করা যায়নি। পরে আবার চেষ্টা করো।";
         console.error("Firestore read error:", error);
