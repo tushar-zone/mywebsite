@@ -191,9 +191,13 @@ document.querySelectorAll('nav a').forEach(a=>a.addEventListener('click',()=>doc
       copyButton.textContent = "📋 লেখা কপি করুন";
       copyButton.style.marginTop = "10px";
       copyButton.style.padding = "10px 16px";
-      copyButton.style.border = "none";
-      copyButton.style.borderRadius = "8px";
+      copyButton.style.background = "linear-gradient(135deg, #FFD700, #D4AF37)";
+      copyButton.style.color = "#111111";
+      copyButton.style.border = "1px solid #B8860B";
+      copyButton.style.borderRadius = "10px";
       copyButton.style.cursor = "pointer";
+      copyButton.style.fontWeight = "bold";
+      copyButton.style.boxShadow = "0 2px 8px rgba(212, 175, 55, 0.3)";
 
       copyButton.addEventListener("click", async () => {
         const textToCopy = data.content || "";
