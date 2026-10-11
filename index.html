@@ -146,7 +146,29 @@ document.querySelectorAll('nav a').forEach(a=>a.addEventListener('click',()=>doc
           content.style.whiteSpace = "pre-wrap";
           content.textContent = data.content || "";
 
-          card.append(heading, content);
+          card.append(heading);
+
+          if (data.imageUrl) {
+            const image = document.createElement("img");
+            image.src = data.imageUrl;
+            image.alt = data.title || "পোস্টের ছবি";
+            image.loading = "lazy";
+            image.style.width = "100%";
+            image.style.height = "auto";
+            image.style.display = "block";
+            image.style.borderRadius = "12px";
+            image.style.marginBottom = "12px";
+
+            image.onerror = () => {
+              image.alt = "ছবিটি লোড করা যায়নি";
+              image.style.display = "none";
+              console.error("Post image failed to load:", data.imageUrl);
+            };
+
+            card.append(image);
+          }
+
+          card.append(content);
           container.append(card);
         });
       }, error => {
