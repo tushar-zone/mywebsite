@@ -54,7 +54,7 @@ footer{text-align:center;border-top:1px solid #5f4519;padding:24px;color:var(--m
 <a class="brand" href="#home"><img src="tushar-gold.png" alt="TZ Logo"> <span>TUSHAR ZONE</span></a>
 <button class="menu" onclick="document.querySelector('nav').classList.toggle('open')" aria-label="মেনু">☰</button>
 <nav>
-<a href="#home">হোম</a><a href="#about">আমার সম্পর্কে</a><a href="#skills">দক্ষতা</a><a href="#projects">প্রজেক্ট</a><a href="#contact">যোগাযোগ</a>
+<a href="#home">হোম</a><a href="#about">আমার সম্পর্কে</a><a href="#skills">দক্ষতা</a><a href="#projects">প্রজেক্ট</a><a href="#my-posts">আমার লেখা</a><a href="#contact">যোগাযোগ</a>
 </nav>
 </div>
 </header>
@@ -86,6 +86,13 @@ footer{text-align:center;border-top:1px solid #5f4519;padding:24px;color:var(--m
 <div class="card"><h3>✨ নতুন আইডিয়া</h3><p>নতুন প্রজেক্ট তৈরি ও নিজের দক্ষতা উন্নত করার পরিকল্পনা।</p></div>
 </div>
 </section>
+
+<section id="my-posts">
+<h2 class="section-title">আমার <span>লেখা</span></h2>
+<div id="posts-list" class="cards">
+  <p>লেখা লোড হচ্ছে...</p>
+</div>
+</section>
 <section id="contact">
 <h2 class="section-title">আমার সাথে <span>যোগাযোগ</span></h2>
 <div class="contact"><p>আমার কাজ দেখতে বা কথা বলতে GitHub-এ আসতে পারো।</p><a class="btn primary" href="https://github.com/tushar-zone" target="_blank" rel="noopener">আমার GitHub ↗</a></div>
@@ -97,5 +104,61 @@ footer{text-align:center;border-top:1px solid #5f4519;padding:24px;color:var(--m
 document.getElementById('year').textContent=new Date().getFullYear();
 document.querySelectorAll('nav a').forEach(a=>a.addEventListener('click',()=>document.querySelector('nav').classList.remove('open')));
 </script>
+
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+<script>
+(() => {
+  const firebaseConfig = {
+    apiKey: "AIzaSyBZu_ChHBpAmJ15l-22LdahOAPntIenxO0",
+    authDomain: "tushar-zone-558ed.firebaseapp.com",
+    projectId: "tushar-zone-558ed",
+    storageBucket: "tushar-zone-558ed.firebasestorage.app",
+    messagingSenderId: "886961280145",
+    appId: "1:886961280145:web:40269c604abe491c7d1b30",
+    measurementId: "G-8S6YC6ZBM1"
+  };
+
+  const container = document.getElementById("posts-list");
+  if (!container) return;
+
+  try {
+    firebase.initializeApp(firebaseConfig);
+    firebase.firestore().collection("posts")
+      .orderBy("createdAt", "desc")
+      .onSnapshot(snapshot => {
+        container.replaceChildren();
+
+        if (snapshot.empty) {
+          container.textContent = "এখনও কোনো লেখা প্রকাশিত হয়নি।";
+          return;
+        }
+
+        snapshot.forEach(doc => {
+          const data = doc.data();
+          const card = document.createElement("article");
+          card.className = "card";
+
+          const heading = document.createElement("h3");
+          heading.textContent = data.title || "শিরোনাম নেই";
+
+          const content = document.createElement("p");
+          content.style.whiteSpace = "pre-wrap";
+          content.textContent = data.content || "";
+
+          card.append(heading, content);
+          container.append(card);
+        });
+      }, error => {
+        container.textContent = "লেখা লোড করা যায়নি। পরে আবার চেষ্টা করো।";
+        console.error("Firestore read error:", error);
+      });
+  } catch (error) {
+    container.textContent = "লেখা লোড করা যায়নি।";
+    console.error(error);
+  }
+})();
+</script>
+
 </body>
 </html>
